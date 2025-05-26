@@ -6,5 +6,9 @@ This project, Smart Kernel-Based Monitoring Agent for Fiber-Optimized Optical Ne
 	•	A web dashboard (React + Chart.js) displays this data in real time.
 	•	Alerts and auto-remediation (like adding bandwidth) are triggered if usage exceeds thresholds.
 	•	The system is containerized with Docker and uses cloud tools like InfluxDB, AWS Lambda, and SageMaker.
+    
 
 It’s a simulated prototype designed by a student team to showcase AI-enhanced, real-time network observability and automated response.
+As of this commit, only the project plan has been devised, and understanding of the project plan is currently underway by Soufian.
+
+
