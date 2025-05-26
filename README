@@ -1,0 +1,10 @@
+Welcome to my project. 
+This project, Smart Kernel-Based Monitoring Agent for Fiber-Optimized Optical Networks (SKMA-FON), is a full-stack monitoring system for high-speed optical networks.
+	•	It uses a Linux kernel module to collect data on CMD traffic and fiber link health.
+	•	A Python agent reads this data via shared memory, processes it, and sends it to the cloud.
+	•	An AI model detects anomalies and predicts traffic spikes.
+	•	A web dashboard (React + Chart.js) displays this data in real time.
+	•	Alerts and auto-remediation (like adding bandwidth) are triggered if usage exceeds thresholds.
+	•	The system is containerized with Docker and uses cloud tools like InfluxDB, AWS Lambda, and SageMaker.
+
+It’s a simulated prototype designed by a student team to showcase AI-enhanced, real-time network observability and automated response.
