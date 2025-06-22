@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKMA-FON Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>SKMA-FON Dashboard</h1>
+            <p>Smart Kernel-Based Monitoring Agent for Fiber-Optimized Optical Networks</p>
+            <div class="status-indicator" id="connectionStatus">
+                <span class="dot"></span>
+                <span id="statusText">Connecting...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- System Overview -->
+        <section class="overview">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Sites</h3>
+                    <div class="stat-value" id="totalSites">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Alerts</h3>
+                    <div class="stat-value alert" id="activeAlerts">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Throughput</h3>
+                    <div class="stat-value" id="totalThroughput">0 Gbps</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Avg Utilization</h3>
+                    <div class="stat-value" id="avgUtilization">0%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Site Metrics Grid -->
+        <section class="sites-section">
+            <h2>Site Monitoring</h2>
+            <div class="sites-grid" id="sitesGrid">
+                <!-- Sites will be populated dynamically -->
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts-section">
+            <div class="chart-container">
+                <h3>Throughput Trends</h3>
+                <canvas id="throughputChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Utilization Overview</h3>
+                <canvas id="utilizationChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Alerts Section -->
+        <section class="alerts-section">
+            <h2>Recent Alerts</h2>
+            <div class="alerts-container" id="alertsContainer">
+                <!-- Alerts will be populated dynamically -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 SKMA-FON by Soufian Carson. All rights reserved.</p>
+            <p>Last updated: <span id="lastUpdated">Never</span></p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
