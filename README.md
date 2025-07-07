@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-A lightweight Linux-kernel monitoring agent that captures WaveServer AI CMD traffic and fiber-link health, shares it with user space through /proc + mmap, enriches it with AI-based anomaly detection and traffic forecasting, and streams the results to a cloud dashboard for real-time observability and auto-remediation.
+A lightweight Linux-kernel monitoring agent that captures WaveServer AI CMD traffic and fiber-link health, shares it with user space through /proc + mmap, enriches it with AI-based anomaly detection and traffic forecasting, and streams the results to a Grafana dashboard for real-time observability and auto-remediation. See the attached pdf in the root directory for a structured project plan. 
 
 ## Architecture
 
