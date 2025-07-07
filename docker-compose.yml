@@ -52,17 +52,74 @@ services:
       timeout: 10s
       retries: 3
 
-  # Web Dashboard (Simple HTTP Server)
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: skma-fon-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    depends_on:
+      - skma-api
+      - influxdb
+    networks:
+      - skma-network
+    restart: unless-stopped
+
+  # InfluxDB Time-Series Database
+  influxdb:
+    image: influxdb:latest
+    container_name: skma-fon-influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=adminpassword
+      - DOCKER_INFLUXDB_INIT_ORG=skma-fon
+      - DOCKER_INFLUXDB_INIT_BUCKET=metrics
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=skmafon-token
+    networks:
+      - skma-network
+    restart: unless-stopped
+
+  # Web Dashboard (Simple HTTP Server) - Still used for simplified UI navigation
   skma-dashboard:
     image: nginx:alpine
     container_name: skma-fon-dashboard
     ports:
-      - "3000:80"
+      - "8000:80"
     volumes:
       - ./dashboard/src:/usr/share/nginx/html:ro
       - ./dashboard/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - skma-api
+      - grafana
+    networks:
+      - skma-network
+    restart: unless-stopped
+
+  # Telegraf for data collection and forwarding
+  telegraf:
+    image: telegraf:latest
+    container_name: skma-fon-telegraf
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    depends_on:
+      - skma-api
+      - influxdb
     networks:
       - skma-network
     restart: unless-stopped
@@ -73,4 +130,8 @@ networks:
 
 volumes:
   api_data:
+    driver: local
+  grafana_data:
+    driver: local
+  influxdb_data:
     driver: local

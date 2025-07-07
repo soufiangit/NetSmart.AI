@@ -1,0 +1,25 @@
+# config file version
+apiVersion: 1
+
+# list of datasources to insert/update
+datasources:
+  # <string, required> name of the datasource. Required
+  - name: InfluxDB
+    # <string, required> datasource type. Required
+    type: influxdb
+    # <string, required> access mode. direct or proxy. Required
+    access: proxy
+    # <string> url
+    url: http://influxdb:8086
+    # <bool> mark as default datasource
+    isDefault: true
+    # <bool> allow users to edit datasources from the UI.
+    editable: true
+    # <map> fields that will be converted to json and stored in jsonData
+    jsonData:
+      version: Flux
+      organization: skma-fon
+      defaultBucket: metrics
+      tlsSkipVerify: true
+    secureJsonData:
+      token: skmafon-token

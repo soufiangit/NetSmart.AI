@@ -134,97 +134,24 @@ h2 {
     color: var(--danger-color);
 }
 
-/* Sites Grid */
-.sites-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
+/* Grafana Dashboard Section */
+.grafana-section {
+    margin-bottom: 2rem;
 }
 
-.site-card {
+.grafana-container {
     background: var(--white);
     border-radius: 10px;
-    padding: 1.5rem;
     box-shadow: var(--shadow);
-    transition: transform 0.2s ease;
+    overflow: hidden;
+    height: 600px;
+    width: 100%;
 }
 
-.site-card:hover {
-    transform: translateY(-2px);
-}
-
-.site-card.anomaly {
-    border-left: 4px solid var(--danger-color);
-}
-
-.site-card.warning {
-    border-left: 4px solid var(--warning-color);
-}
-
-.site-card.normal {
-    border-left: 4px solid var(--success-color);
-}
-
-.site-name {
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-}
-
-.site-throughput {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--secondary-color);
-    margin-bottom: 0.5rem;
-}
-
-.site-metrics {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.metric {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.25rem 0;
-}
-
-.metric-label {
-    color: var(--dark-gray);
-    font-size: 0.9rem;
-}
-
-.metric-value {
-    font-weight: 500;
-}
-
-.site-timestamp {
-    font-size: 0.8rem;
-    color: #7f8c8d;
-    margin-top: 0.5rem;
-}
-
-/* Charts */
-.charts-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-}
-
-.chart-container {
-    background: var(--white);
-    padding: 1.5rem;
-    border-radius: 10px;
-    box-shadow: var(--shadow);
-}
-
-.chart-container h3 {
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-    text-align: center;
+.grafana-container iframe {
+    border: none;
+    width: 100%;
+    height: 100%;
 }
 
 /* Alerts */
@@ -321,16 +248,12 @@ h2 {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .charts-section {
-        grid-template-columns: 1fr;
+    .grafana-container {
+        height: 400px;
     }
     
     .header h1 {
         font-size: 2rem;
-    }
-    
-    .site-metrics {
-        grid-template-columns: 1fr;
     }
     
     .alert-item {

@@ -1,22 +1,24 @@
-// SKMA-FON Dashboard JavaScript
-class SKMADashboard {
+// SKMA-FON Grafana Integration
+class SKMAGrafanaIntegration {
     constructor() {
         this.apiUrl = window.location.hostname === 'localhost' ? 
             'http://localhost:5000' : 
             `http://${window.location.hostname}:5000`;
         
+        this.grafanaUrl = window.location.hostname === 'localhost' ? 
+            'http://localhost:3000' : 
+            `http://${window.location.hostname}:3000`;
+        
         this.isConnected = false;
-        this.charts = {};
-        this.metricsHistory = [];
         this.refreshInterval = 5000; // 5 seconds
         
         this.init();
     }
     
     init() {
-        console.log('Initializing SKMA-FON Dashboard...');
+        console.log('Initializing SKMA-FON Grafana Integration...');
         this.setupElements();
-        this.initCharts();
+        this.loadGrafanaDashboards();
         this.startDataRefresh();
         this.updateConnectionStatus('connecting');
     }
@@ -31,7 +33,8 @@ class SKMADashboard {
             avgUtilization: document.getElementById('avgUtilization'),
             sitesGrid: document.getElementById('sitesGrid'),
             alertsContainer: document.getElementById('alertsContainer'),
-            lastUpdated: document.getElementById('lastUpdated')
+            lastUpdated: document.getElementById('lastUpdated'),
+            grafanaContainer: document.getElementById('grafanaDashboard')
         };
     }
     
@@ -48,18 +51,38 @@ class SKMADashboard {
         }
     }
     
-    async loadDashboardData() {
+    loadGrafanaDashboards() {
+        // Load Grafana in iframe if grafanaContainer exists
+        if (this.elements.grafanaContainer) {
+            // Set default dashboard with auto-refresh
+            const dashboardUrl = `${this.grafanaUrl}/d/skma-fon-dashboard/skma-fon-network-monitoring?orgId=1&refresh=5s&kiosk`;
+            
+            this.elements.grafanaContainer.innerHTML = `
+                <iframe 
+                    src="${dashboardUrl}" 
+                    width="100%" 
+                    height="100%" 
+                    frameborder="0"
+                    allow="fullscreen">
+                </iframe>
+            `;
+            
+            console.log('Grafana dashboard loaded:', dashboardUrl);
+        } else {
+            console.error('Grafana container not found in DOM');
+        }
+    }
+    
+    async loadSummaryData() {
         try {
-            // Fetch latest metrics
-            const metricsData = await this.fetchData('/metrics?limit=50');
+            // Fetch latest metrics for summary stats only (not for visualization)
+            const metricsData = await this.fetchData('/metrics?limit=20');
             
             // Fetch alerts
             const alertsData = await this.fetchData('/alerts?hours=1');
             
-            // Update dashboard
+            // Update summary stats
             this.updateOverviewStats(metricsData.metrics);
-            this.updateSitesGrid(metricsData.metrics);
-            this.updateCharts(metricsData.metrics);
             this.updateAlerts(alertsData.alerts);
             
             // Update connection status
@@ -150,192 +173,6 @@ class SKMADashboard {
         return grouped;
     }
     
-    updateSitesGrid(metrics) {
-        const siteMetrics = this.groupMetricsBySite(metrics);
-        const sitesArray = Object.keys(siteMetrics).map(siteName => ({
-            name: siteName,
-            metrics: siteMetrics[siteName][0] // Latest metrics
-        }));
-        
-        if (sitesArray.length === 0) {
-            this.elements.sitesGrid.innerHTML = `
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <span>No site data available</span>
-                </div>
-            `;
-            return;
-        }
-        
-        this.elements.sitesGrid.innerHTML = sitesArray.map(site => {
-            const metric = site.metrics;
-            const status = this.getSiteStatus(metric);
-            const timestamp = new Date(metric.timestamp * 1000).toLocaleString();
-            
-            return `
-                <div class="site-card ${status}">
-                    <div class="site-name">${site.name}</div>
-                    <div class="site-throughput">${metric.throughput_gbps} Gbps</div>
-                    
-                    <div class="site-metrics">
-                        <div class="metric">
-                            <span class="metric-label">Utilization:</span>
-                            <span class="metric-value">${metric.utilization.toFixed(1)}%</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Errors:</span>
-                            <span class="metric-value">${metric.error_count}</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">BER Errors:</span>
-                            <span class="metric-value">${metric.ber_errors}</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Link Status:</span>
-                            <span class="metric-value">${metric.link_status ? 'UP' : 'DOWN'}</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Anomaly Score:</span>
-                            <span class="metric-value">${metric.anomaly_score.toFixed(3)}</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Forecast:</span>
-                            <span class="metric-value">${metric.forecast_gbps} Gbps</span>
-                        </div>
-                    </div>
-                    
-                    <div class="site-timestamp">Last updated: ${timestamp}</div>
-                    
-                    ${metric.anomaly_score >= 0.8 ? '<div class="alert-badge">ANOMALY DETECTED</div>' : ''}
-                    ${metric.utilization >= 90 ? '<div class="alert-badge">HIGH UTILIZATION</div>' : ''}
-                </div>
-            `;
-        }).join('');
-    }
-    
-    getSiteStatus(metric) {
-        if (metric.anomaly_score >= 0.8) return 'anomaly';
-        if (metric.utilization >= 90) return 'warning';
-        return 'normal';
-    }
-    
-    initCharts() {
-        // Throughput Chart
-        const throughputCtx = document.getElementById('throughputChart').getContext('2d');
-        this.charts.throughput = new Chart(throughputCtx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: []
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Throughput (Gbps)'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Time'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    }
-                }
-            }
-        });
-        
-        // Utilization Chart
-        const utilizationCtx = document.getElementById('utilizationChart').getContext('2d');
-        this.charts.utilization = new Chart(utilizationCtx, {
-            type: 'doughnut',
-            data: {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    backgroundColor: [
-                        '#3498db',
-                        '#27ae60',
-                        '#f39c12',
-                        '#e74c3c'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-    }
-    
-    updateCharts(metrics) {
-        this.updateThroughputChart(metrics);
-        this.updateUtilizationChart(metrics);
-    }
-    
-    updateThroughputChart(metrics) {
-        const siteMetrics = this.groupMetricsBySite(metrics);
-        const sites = Object.keys(siteMetrics);
-        
-        // Get last 10 data points for each site
-        const datasets = sites.map((siteName, index) => {
-            const siteData = siteMetrics[siteName].slice(0, 10).reverse();
-            const colors = ['#3498db', '#27ae60', '#f39c12', '#e74c3c'];
-            
-            return {
-                label: siteName,
-                data: siteData.map(m => m.throughput_gbps),
-                borderColor: colors[index % colors.length],
-                backgroundColor: colors[index % colors.length] + '20',
-                tension: 0.1
-            };
-        });
-        
-        // Create time labels
-        const labels = [];
-        if (sites.length > 0) {
-            const firstSite = siteMetrics[sites[0]].slice(0, 10).reverse();
-            labels.push(...firstSite.map(m => 
-                new Date(m.timestamp * 1000).toLocaleTimeString()
-            ));
-        }
-        
-        this.charts.throughput.data.labels = labels;
-        this.charts.throughput.data.datasets = datasets;
-        this.charts.throughput.update();
-    }
-    
-    updateUtilizationChart(metrics) {
-        const siteMetrics = this.groupMetricsBySite(metrics);
-        const sites = Object.keys(siteMetrics);
-        
-        const labels = sites;
-        const data = sites.map(siteName => {
-            const latest = siteMetrics[siteName][0];
-            return latest.utilization;
-        });
-        
-        this.charts.utilization.data.labels = labels;
-        this.charts.utilization.data.datasets[0].data = data;
-        this.charts.utilization.update();
-    }
-    
     updateAlerts(alerts) {
         if (!alerts || alerts.length === 0) {
             this.elements.alertsContainer.innerHTML = `
@@ -365,37 +202,54 @@ class SKMADashboard {
     }
     
     startDataRefresh() {
-        // Initial load
-        this.loadDashboardData();
+        // Initial load of summary data
+        this.loadSummaryData();
         
-        // Set up periodic refresh
+        // Set up periodic refresh of summary data
         setInterval(() => {
-            this.loadDashboardData();
+            this.loadSummaryData();
         }, this.refreshInterval);
     }
 }
 
-// Initialize dashboard when DOM is loaded
+// Initialize Grafana integration when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.dashboard = new SKMADashboard();
+    window.dashboard = new SKMAGrafanaIntegration();
 });
 
 // Add some utility functions for debugging
 window.dashboardUtils = {
     toggleRefresh: () => {
+        const iframe = document.querySelector('#grafanaDashboard iframe');
+        if (iframe) {
+            const src = iframe.src;
+            if (src.includes('refresh=5s')) {
+                iframe.src = src.replace('refresh=5s', 'refresh=off');
+                console.log('Auto-refresh disabled');
+            } else {
+                iframe.src = src.replace('refresh=off', 'refresh=5s');
+                console.log('Auto-refresh enabled');
+            }
+        }
+        
         if (window.dashboard.refreshInterval) {
             clearInterval(window.dashboard.refreshInterval);
             window.dashboard.refreshInterval = null;
-            console.log('Auto-refresh disabled');
+            console.log('Summary data refresh disabled');
         } else {
             window.dashboard.startDataRefresh();
-            console.log('Auto-refresh enabled');
+            console.log('Summary data refresh enabled');
         }
     },
     
     manualRefresh: () => {
         console.log('Manual refresh triggered');
-        window.dashboard.loadDashboardData();
+        window.dashboard.loadSummaryData();
+        
+        const iframe = document.querySelector('#grafanaDashboard iframe');
+        if (iframe) {
+            iframe.src = iframe.src;
+        }
     },
     
     getMetrics: async () => {
