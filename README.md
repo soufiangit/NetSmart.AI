@@ -1,4 +1,4 @@
-# Smart Kernel-Based Monitoring Agent for Fiber-Optimized Optical Networks (SKMA-FON)
+# NetSmart.AI
 
 **Designed by Soufian Carson**
 
@@ -78,20 +78,9 @@ NetSmart.AI/
 - [x] Auto-remediation webhooks
 - [x] Docker containerization
 
-## Development Team
 
-- **Soufian Carson** - Project Manager & Lead Developer
-- **Teammate A** - Kernel Module Developer
-- **Teammate B** - Cloud/API Engineer
-- **Teammate C** - AI/ML Engineer
-- **Teammate D** - Front-End & UX Designer
 
 ## License
 
 MIT License - see LICENSE file for details.
 
-## Support
-
-- Email: support@skma-fon.dev
-- Issues: GitHub Issues
-- SLA: 48h response time
